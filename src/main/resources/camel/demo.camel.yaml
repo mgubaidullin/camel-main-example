@@ -1,0 +1,25 @@
+- route:
+    id: route-51bc
+    from:
+      uri: kamelet:timer-source
+      id: from-a899
+      parameters:
+        message: Hello
+      steps:
+        - log:
+            message: ${body}
+            id: log-92ec
+- route:
+    id: demo
+    from:
+      uri: direct
+      id: from-7fa8
+      parameters:
+        name: demo
+      steps:
+        - setBody:
+            id: setBody-064f
+            expression:
+              simple:
+                expression: Hello
+                id: simple-6888

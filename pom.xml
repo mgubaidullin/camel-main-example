@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.demo</groupId>
+    <artifactId>karavan</artifactId>
+    <version>1</version>
+
+    <properties>
+        <java.version>11</java.version>
+        <!--REQUIRED default label name-->
+        <label.runtime>app.kubernetes.io/runtime</label.runtime>
+        <!--REQUIRED all jib properties should be copied from application.properties -->
+        <jib.to.image>demo/karavan:123</jib.to.image>
+        <!--REQUIRED all jkube properties should be copied from application.properties -->
+        <jkube.version>1.13.1</jkube.version>
+        <jkube.build.strategy>jib</jkube.build.strategy>
+        <jkube.skip.build>true</jkube.skip.build>
+        <jkube.namespace>karavan</jkube.namespace>
+        <jkube.imagePullPolicy>IfNotPresent</jkube.imagePullPolicy>
+        <jkube.enricher.jkube-project-label.group>karavan</jkube.enricher.jkube-project-label.group>
+        <jkube.enricher.jkube-project-label.provider>karavan</jkube.enricher.jkube-project-label.provider>
+        <jkube.enricher.jkube-controller.type>Deployment</jkube.enricher.jkube-controller.type>
+        <jkube.enricher.jkube-controller.replicaCount>1</jkube.enricher.jkube-controller.replicaCount>
+        <jkube.enricher.jkube-service.port>8080</jkube.enricher.jkube-service.port>
+        <jkube.recreate>true</jkube.recreate>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Camel BOM -->
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-bom</artifactId>
+                <version>3.21.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-main</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-health</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-kamelet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-microprofile-health</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-platform-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-platform-http-vertx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-timer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-direct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-yaml-dsl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.kamelets</groupId>
+            <artifactId>camel-kamelets-utils</artifactId>
+            <version>3.21.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.camel</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Could this one be a parameter in application.properties? -->
+        <dependency>
+            <groupId>org.apache.camel.kamelets</groupId>
+            <artifactId>camel-kamelets</artifactId>
+            <version>3.20.4</version>
+        </dependency>
+
+
+        <!-- for logging in color -->
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <!-- mvn camel:run or mvn camel:dev -->
+            <plugin>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-maven-plugin</artifactId>
+                <version>3.21.0</version>
+                <configuration>
+                    <mainClass>org.demo.karavan.CamelApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-fatjar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- package as runner jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/resources/assembly/runner.xml</descriptor>
+                    </descriptors>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.demo.karavan.CamelApplication</mainClass>
+                        </manifest>
+                        <!--REQUIRED to add <Multi-Release>true</Multi-Release> to fix: WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance. -->
+                        <manifestEntries>
+                            <Multi-Release>true</Multi-Release>
+                        </manifestEntries>
+                    </archive>
+                    <!--REQUIRED to keep single fat-jar in the folder -->
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--REQUIRED jib plugin configuration -->
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <container>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                    </container>
+                    <containerizingMode>packaged</containerizingMode>
+                </configuration>
+            </plugin>
+            <!--REQUIRED jkube plugin configuration -->
+            <plugin>
+                <groupId>org.eclipse.jkube</groupId>
+                <artifactId>kubernetes-maven-plugin</artifactId>
+                <version>${jkube.version}</version>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>${jib.to.image}</name>
+                            <build>
+                            </build>
+                        </image>
+                    </images>
+                    <resources>
+                        <labels>
+                            <all>
+                                <property>
+                                    <name>${label.runtime}</name>
+                                    <value>camel</value>
+                                </property>
+                            </all>
+                        </labels>
+                    </resources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
